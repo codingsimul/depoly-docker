@@ -57,6 +57,7 @@ jobs:
           script_stop: true
           script: |
             sudo systemctl start docker
+            aws ecr get-login-password --region ap-northeast-2 | sudo docker login --username AWS --password-stdin ${{steps.ecr-login.outputs.registry}}
             docker stop spring-server || true
             docker rm spring-server || true
             docker pull ${{steps.ecr-login.outputs.registry}}/spring-server:v1
