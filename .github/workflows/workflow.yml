@@ -49,7 +49,7 @@ jobs:
           host: ${{secrets.EC2_HOST}}
           username: ${{secrets.EC2_USERNAME}}
           key: ${{secrets.KEYPAIR}}
-          script-stop: true
+          script_stop: true
           script: |
             docker stop spring-server:v1
             docker rm spring-server:v1
