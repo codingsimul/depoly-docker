@@ -43,6 +43,11 @@ jobs:
          docker build -t ${{steps.ecr-login.outputs.registry}}/spring-server:v1 .
          docker push ${{steps.ecr-login.outputs.registry}}/spring-server:v1
 
+      - name: Verify ECR login
+        run: |
+          echo "Verifying AWS ECR login"
+          docker info
+
       - name: ssh ecr 원격 접속.
         uses: appleboy/ssh-action@v1.0.3
         with:
