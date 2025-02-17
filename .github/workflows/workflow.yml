@@ -1,64 +1,58 @@
+name: Deploy To EC2
+
 on:
   push:
     branches:
       - main
 
 jobs:
-  depoly-job:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-
-      - name: aws-credential 검사.
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ap-northeast-2
-          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
-          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-
-      - name: aws ecr 로그인.
-        id: ecr-login
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: repo 가져오기.
+      - name: Github Repository 파일 불러오기
         uses: actions/checkout@v4
 
-      - name: jdk 설치s
+      - name: JDK 17버전 설치
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      - name: yml 파일 작성.
-        run: echo ${{secrets.APPLICATION}} > ./src/main/resources/application.yml
+      - name: application.yml 파일 만들기
+        run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
 
-      - name: build
-        run: |
-          chmod +x ./gradlew
-          ./gradlew clean build
-          ls -l build/libs/
+      - name: 테스트 및 빌드하기
+        run: ./gradlew clean build
 
-      - name: docker build and push
-        run: |
-         ls -l build/libs/
-         docker build -t ${{steps.ecr-login.outputs.registry}}/spring-server:v1 .
-         docker push ${{steps.ecr-login.outputs.registry}}/spring-server:v1
+      - name: AWS Resource에 접근할 수 있게 AWS credentials 설정
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ap-northeast-2
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - name: Verify ECR login
-        run: |
-          echo "Verifying AWS ECR login"
-          docker info
+      - name: ECR에 로그인하기
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-      - name: ssh ecr 원격 접속.
+      - name: Docker 이미지 생성
+        run: docker build -t instagram-server .
+
+      - name: Docker 이미지에 Tag 붙이기
+        run: docker tag instagram-server ${{ steps.login-ecr.outputs.registry }}/instagram-server:latest
+
+      - name: ECR에 Docker 이미지 Push하기
+        run: docker push ${{ steps.login-ecr.outputs.registry }}/instagram-server:latest
+
+      - name: SSH로 EC2에 접속하기
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{secrets.EC2_HOST}}
-          username: ${{secrets.EC2_USERNAME}}
-          key: ${{secrets.KEYPAIR}}
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.KEYPAIR }}
           script_stop: true
           script: |
-            sudo systemctl start docker
-            aws ecr get-login-password --region ap-northeast-2 | sudo docker login --username AWS --password-stdin ${{steps.ecr-login.outputs.registry}}
-            docker stop spring-server || true
-            docker rm spring-server || true
-            docker pull ${{steps.ecr-login.outputs.registry}}/spring-server:v1
-            docker run -d -p 8080:8080 --name spring-server ${{steps.ecr-login.outputs.registry}}/spring-server:v1
+            docker stop instagram-server || true
+            docker rm instagram-server || true
+            docker pull ${{ steps.login-ecr.outputs.registry }}/instagram-server:latest
+            docker run -d --name instagram-server -p 8080:8080 ${{ steps.login-ecr.outputs.registry }}/instagram-server:latest
