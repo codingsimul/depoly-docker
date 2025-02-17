@@ -52,7 +52,7 @@ jobs:
           script_stop: true
           script: |
             sudo systemctl start docker
-            docker stop spring-server
-            docker rm spring-server
+            docker stop spring-server || true
+            docker rm spring-server || true
             docker pull ${{steps.ecr-login.outputs.registry}}/spring-server:v1
             docker run -d -p 8080:8080 --name spring-server ${{steps.ecr-login.outputs.registry}}/spring-server:v1
