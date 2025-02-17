@@ -51,6 +51,7 @@ jobs:
           key: ${{secrets.KEYPAIR}}
           script_stop: true
           script: |
+            sudo systemctl start docker
             docker stop spring-server
             docker rm spring-server
             docker pull ${{steps.ecr-login.outputs.registry}}/spring-server:v1
