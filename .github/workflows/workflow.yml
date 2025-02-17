@@ -42,7 +42,7 @@ jobs:
          docker push ${{steps.login-ecr.outputs.registry}}/spring-server:v1
 
       - name: ssh ecr 원격 접속.
-        uses: applyboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{secrets.EC2_HOST}}
           username: ${{secrets.EC2_USERNAME}}
