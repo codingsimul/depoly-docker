@@ -54,7 +54,6 @@ jobs:
           key: ${{ secrets.KEYPAIR }}
           script_stop: true
           script: |
-            docker login -u AWS -p $(aws ecr get-login-password --region ap-northeast-2) aws_account_id.dkr.ecr.REGION.amazonaws.com
             docker stop spring-server || true
             docker rm spring-server || true
             docker pull ${{ steps.login-ecr.outputs.registry }}/spring-server:latest
