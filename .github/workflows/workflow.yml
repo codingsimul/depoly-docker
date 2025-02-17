@@ -41,10 +41,10 @@ jobs:
         run: docker build -t instagram-server .
 
       - name: Docker 이미지에 Tag 붙이기
-        run: docker tag instagram-server ${{ steps.login-ecr.outputs.registry }}/instagram-server:latest
+        run: docker tag instagram-server ${{ steps.login-ecr.outputs.registry }}/spring-server:latest
 
       - name: ECR에 Docker 이미지 Push하기
-        run: docker push ${{ steps.login-ecr.outputs.registry }}/instagram-server:latest
+        run: docker push ${{ steps.login-ecr.outputs.registry }}/spring-server:latest
 
       - name: SSH로 EC2에 접속하기
         uses: appleboy/ssh-action@v1.0.3
@@ -54,7 +54,7 @@ jobs:
           key: ${{ secrets.KEYPAIR }}
           script_stop: true
           script: |
-            docker stop instagram-server || true
-            docker rm instagram-server || true
-            docker pull ${{ steps.login-ecr.outputs.registry }}/instagram-server:latest
-            docker run -d --name instagram-server -p 8080:8080 ${{ steps.login-ecr.outputs.registry }}/instagram-server:latest
+            docker stop spring-server || true
+            docker rm spring-server || true
+            docker pull ${{ steps.login-ecr.outputs.registry }}/spring-server:latest
+            docker run -d --name spring-server -p 8080:8080 ${{ steps.login-ecr.outputs.registry }}/spring-server:latest
