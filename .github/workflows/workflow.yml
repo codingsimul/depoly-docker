@@ -33,8 +33,8 @@ jobs:
 
       - name: build
         run: |
+          chmod +x ./gradlew
           ./gradlew clean build
-          ./gradlew test
 
       - name: docker build and push
         run: |
