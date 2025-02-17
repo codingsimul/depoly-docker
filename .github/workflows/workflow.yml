@@ -54,7 +54,7 @@ jobs:
           key: ${{ secrets.KEYPAIR }}
           script_stop: true
           script: |
-            sudo docker stop spring-server || true
-            sudo docker rm spring-server || true
-            sudo docker pull ${{ steps.login-ecr.outputs.registry }}/spring-server:latest
-            sudo docker run -d --name spring-server -p 8080:8080 ${{ steps.login-ecr.outputs.registry }}/spring-server:latest
+            docker stop spring-server || true
+            docker rm spring-server || true
+            docker pull ${{ steps.login-ecr.outputs.registry }}/spring-server:latest
+            docker run -d --name spring-server -p 8080:8080 ${{ steps.login-ecr.outputs.registry }}/spring-server:latest
