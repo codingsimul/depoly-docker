@@ -51,7 +51,7 @@ jobs:
           key: ${{secrets.KEYPAIR}}
           script_stop: true
           script: |
-            docker stop spring-server:v1
-            docker rm spring-server:v1
-            docker pull ${{steps.login-ecr.outputs.registry}}/spring-server:v1
-            docker run -d -p 8080:8080 --name spring-server:v1 ${{steps.login-ecr.outputs.registry}}/spring-server:v1
+            docker stop spring-server
+            docker rm spring-server
+            docker pull ${{steps.ecr-login.outputs.registry}}/spring-server:v1
+            docker run -d -p 8080:8080 --name spring-server ${{steps.ecr-login.outputs.registry}}/spring-server:v1
